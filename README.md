@@ -4,12 +4,13 @@ A cli utility to transform E3SM land model output into CMIP compatible data.
 
 ## clm_singlevar_ts
 
-Extract single variables from clm2.h0 files into single-variable-per-file time series.
+Extract single variables from clm2.h0 files into single-variable-per-file time series. Extract either all the variables in each of the monthly history files, or just selected variables.
 
+```
 usage: clm_singlevar_ts.py [-h] [-v VAR_LIST [VAR_LIST ...]] -c CASE_ID -i
                            INPUT_PATH -o OUTPUT_PATH -s START_YEAR -e END_YEAR
                            [-n NUM_PROC] [-N]
-```
+
 optional arguments:
   -h, --help            show this help message and exit
   -v VAR_LIST [VAR_LIST ...], --var-list VAR_LIST [VAR_LIST ...]
@@ -33,7 +34,10 @@ optional arguments:
 
 ## clm_to_cmip
 
-Transform clm style time series variables into cmip compatible data
+Transform clm style time series variables into cmip compatible data. Each variable needs its own handler script, implemented in the cmor_handlers directory (see directory for current handlers). In addition, you will need to clone [the cmor repo](https://github.com/PCMDI/cmor) and link in the Tables and Test directories.
+
+Currently can only handle SNOWDP and EFLX_LH_TOT variables with more to come as they're written. See clm_to_cmip_translation_reference.txt for a limited human readable reference between the two variable types.
+
 ```
 usage: clm_to_cmip.py [-h] -v VAR_LIST [VAR_LIST ...] -c CASEID -i INPUT -o
                       OUTPUT [-n NUM_PROC] [-H HANDLERS]
