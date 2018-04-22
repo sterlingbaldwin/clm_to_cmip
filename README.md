@@ -34,7 +34,7 @@ optional arguments:
 ## clm_to_cmip
 
 Transform clm style time series variables into cmip compatible data
-
+```
 usage: clm_to_cmip.py [-h] -v VAR_LIST [VAR_LIST ...] -c CASEID -i INPUT -o
                       OUTPUT [-n NUM_PROC] [-H HANDLERS]
 
@@ -56,3 +56,4 @@ optional arguments:
   -H HANDLERS, --handlers HANDLERS
                         optional: path to cmor handlers directory, default =
                         ./cmor_handlers
+```
