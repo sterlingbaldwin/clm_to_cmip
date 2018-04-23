@@ -1,8 +1,8 @@
-# clm_to_cmip
+# e3sm_to_cmip
 
 A cli utility to transform E3SM land model output into CMIP compatible data.
 
-## clm_singlevar_ts
+## singlevar_ts
 
 Extract single variables from clm2.h0 files into single-variable-per-file time series. Extract either all the variables in each of the monthly history files, or just selected variables.
 
@@ -32,7 +32,7 @@ optional arguments:
   -N, --proc-vars       set the number of process to the number of variables
 ```
 
-## clm_to_cmip
+## e3sm_to_cmip
 
 Transform clm style time series variables into cmip compatible data. Each variable needs its own handler script, implemented in the cmor_handlers directory (see directory for current handlers). In addition, you will need to clone [the cmor repo](https://github.com/PCMDI/cmor) and link in the Tables and Test directories.
 

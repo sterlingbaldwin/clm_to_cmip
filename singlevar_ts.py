@@ -10,7 +10,7 @@ from time import sleep
 import logging
 import traceback
 
-def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False):
+def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False, data_type='clm2.h0'):
     """
     Extract all variables in var_list from all files
     found in inpath that match the caseid and are between 
@@ -50,7 +50,9 @@ def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False)
     # First get the list of files in our year range that match the caseid
     contents = os.listdir(os.getcwd())
     files = list()
-    start_pattern = '{caseid}.clm2.h0.'.format(caseid=caseid)
+    start_pattern = '{caseid}.{type}.'.format(
+        caseid=caseid,
+        type=data_type)
     start_pattern_len = len(start_pattern)
     end_pattern = '.nc'
     end_pattern_len = 3
@@ -194,6 +196,10 @@ if __name__ == "__main__":
         '-N', '--proc-vars',
         action='store_true',
         help='set the number of process to the number of variables')
+    parser.add_argument(
+        '-d', '--data-type',
+        required=True,
+        help='The type of data to extract from, e.g. clm2.h0 or cam.h0')
     try:
         args = parser.parse_args(sys.argv[1:])
     except:
@@ -222,4 +228,5 @@ if __name__ == "__main__":
           start=args.start_year,
           end=args.end_year,
           nproc=args.num_proc,
-          proc_vars=args.proc_vars)
+          proc_vars=args.proc_vars,
+          data_type=args.data_type)
