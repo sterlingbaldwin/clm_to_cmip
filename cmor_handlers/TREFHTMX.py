@@ -1,41 +1,58 @@
-import os, sys
-import traceback
+import os
 import cmor
 import cdms2
 
 
 def handle(infile="", tables_dir=""):
     """
-    Transform E3SM.FCEV into CMIP.hfls
-    FGR(time, lat, lon) ;
-		FGR:long_name = "heat flux into soil/snow including snow melt and lake / snow light transmission" ;
-		FGR:units = "W/m^2" ;
-		FGR:cell_methods = "time: mean" ;
-		FGR:_FillValue = 1.e+36f ;
-		FGR:missing_value = 1.e+36f ;
-		FGR:cell_measures = "area: area" ;
+    Transform E3SM.TREFHTMX into CMIP.tasmax
+    float TREFHTMX(time, lat, lon) ;
+        TREFHT:units = "K" ;
+        TREFHT:long_name = "Reference height temperature" ;
+        TREFHT:cell_methods = "time: mean" ;
+        TREFHT:cell_measures = "area: area" ;
+
+    CMIP5_Amon
+        tasmin
+        air_temperature
+        longitude latitude time height2m
+        atmos
+        1
+        TREFMNAV
+        TREFMNAV no change
     """
     if not infile:
         return "hello from {}".format(__name__)
 
     # extract data from the input file
     f = cdms2.open(infile)
-    data = f('EFLX_LH_TOT')
+    data = f('TREFHTMX')
     lat = data.getLatitude()[:]
     lon = data.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
     time = data.getTime()
-    time_bnds = f('time_bounds')
+    time_bnds = f('time_bnds')
     f.close()
 
     # setup cmor
     tables_path = os.path.join(tables_dir, 'Tables')
     test_path = os.path.join(tables_dir, 'Test', 'common_user_input.json')
-    cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE)
+    logfile = os.path.join(os.getcwd(), 'logs')
+    if not os.path.exists(logfile):
+        os.makedirs(logfile)
+    _, tail = os.path.split(infile)
+    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    cmor.setup(
+        inpath=tables_path,
+        netcdf_file_action=cmor.CMOR_REPLACE, 
+        logfile=logfile)
     cmor.dataset_json(test_path)
     table = 'CMIP6_Amon.json'
-    cmor.load_table(table)
+    try:
+        cmor.load_table(table)
+    except Exception as e:
+        print 'Unable to load table from {}'.format(__name__)
 
     # create axes
     axes = [{
@@ -58,12 +75,13 @@ def handle(infile="", tables_dir=""):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('hfls', 'W/m^2', axis_ids, positive='up')
+    varid = cmor.variable('tasmax', 'K', axis_ids)
 
     # write out the data
     try:
         for index, val in enumerate(data.getTime()[:]):
-            cmor.write(varid, data[index, :], time_vals=val, time_bnds=[time_bnds[index, :]])
+            cmor.write(varid, data[index, :], time_vals=val,
+                       time_bnds=[time_bnds[index, :]])
     except:
         raise
     finally:

@@ -1,45 +1,55 @@
-import os, sys
-import traceback
+import os
 import cmor
 import cdms2
 
 
-#
-#  PARTIAL
-#
-
-
 def handle(infile="", tables_dir=""):
     """
-    Transform E3SM.FLDS into CMIP.hfls
-    float FSNO(time, lat, lon) ;
-		FSNO:long_name = "fraction of ground covered by snow" ;
-		FSNO:units = "unitless" ;
-		FSNO:cell_methods = "time: mean" ;
-		FSNO:_FillValue = 1.e+36f ;
-		FSNO:missing_value = 1.e+36f ;
-		FSNO:cell_measures = "area: area" ;
+    Transform E3SM.QREFHT into CMIP.huss
+
+
+
+    CMIP5_Amon
+        hurs
+        relative_humidity
+        longitude latitude time height2m
+        atmos
+        1
+        RHREFHT
+        RHREFHT no change
     """
     if not infile:
         return "hello from {}".format(__name__)
+
     # extract data from the input file
     f = cdms2.open(infile)
-    data = f('EFLX_LH_TOT')
+    data = f('QREFHT')
     lat = data.getLatitude()[:]
     lon = data.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
     time = data.getTime()
-    time_bnds = f('time_bounds')
+    time_bnds = f('time_bnds')
     f.close()
 
     # setup cmor
     tables_path = os.path.join(tables_dir, 'Tables')
     test_path = os.path.join(tables_dir, 'Test', 'common_user_input.json')
-    cmor.setup(inpath=tables_path, netcdf_file_action=cmor.CMOR_REPLACE)
+    logfile = os.path.join(os.getcwd(), 'logs')
+    if not os.path.exists(logfile):
+        os.makedirs(logfile)
+    _, tail = os.path.split(infile)
+    logfile = os.path.join(logfile, tail.replace('.nc', '.log'))
+    cmor.setup(
+        inpath=tables_path,
+        netcdf_file_action=cmor.CMOR_REPLACE, 
+        logfile=logfile)
     cmor.dataset_json(test_path)
     table = 'CMIP6_Amon.json'
-    cmor.load_table(table)
+    try:
+        cmor.load_table(table)
+    except Exception as e:
+        print 'Unable to load table from {}'.format(__name__)
 
     # create axes
     axes = [{
@@ -62,12 +72,13 @@ def handle(infile="", tables_dir=""):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('hfls', 'W/m^2', axis_ids, positive='up')
+    varid = cmor.variable('huss', '1.0', axis_ids)
 
     # write out the data
     try:
         for index, val in enumerate(data.getTime()[:]):
-            cmor.write(varid, data[index, :], time_vals=val, time_bnds=[time_bnds[index, :]])
+            cmor.write(varid, data[index, :], time_vals=val,
+                       time_bnds=[time_bnds[index, :]])
     except:
         raise
     finally:

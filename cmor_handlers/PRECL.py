@@ -5,36 +5,42 @@ import cdms2
 
 def handle(infile="", tables_dir=""):
     """
-    Transform E3SM.TS into CMIP.ts
+    Transform E3SM.PRECC + E3SM.PRECL into CMIP.pr
 
-    float TS(time, lat, lon) ;
-        TS:units = "K" ;
-        TS:long_name = "Surface temperature (radiative)" ;
-        TS:cell_methods = "time: mean" ;
-        TS:cell_measures = "area: area" ;
+
 
     CMIP5_Amon
-        ts
-        surface_temperature
+        pr
+        precipitation_flux
         longitude latitude time
         atmos
-        1
-        TS
-        TS no change
+        2
+        PRECC PRECL
+        PRECC + PRECL and unit conversion
     """
     if not infile:
         return "hello from {}".format(__name__)
 
     # extract data from the input file
-    f = cdms2.open(infile)
-    data = f('TS')
-    lat = data.getLatitude()[:]
-    lon = data.getLongitude()[:]
-    lat_bnds = f('lat_bnds')
-    lon_bnds = f('lon_bnds')
-    time = data.getTime()
-    time_bnds = f('time_bnds')
-    f.close()
+    precc_path = infile.replace('PRECL', 'PRECC')
+    PRECC = cdms2.open(precc_path)
+    precc = PRECC('PRECC')
+    lat = precc.getLatitude()[:]
+    lon = precc.getLongitude()[:]
+    lat_bnds = PRECC('lat_bnds')
+    lon_bnds = PRECC('lon_bnds')
+    time = precc.getTime()
+    time_bnds = PRECC('time_bnds')
+    PRECC.close()
+
+    PRECL = cdms2.open(infile)
+    precl = PRECL('PRECL')
+    lat = precl.getLatitude()[:]
+    lon = precl.getLongitude()[:]
+    lat_bnds = PRECL('lat_bnds')
+    lon_bnds = PRECL('lon_bnds')
+    time_bnds = PRECL('time_bnds')
+    PRECL.close()    
 
     # setup cmor
     tables_path = os.path.join(tables_dir, 'Tables')
@@ -76,12 +82,13 @@ def handle(infile="", tables_dir=""):
         axis_ids.append(axis_id)
 
     # create the cmor variable
-    varid = cmor.variable('ts', 'K', axis_ids)
+    varid = cmor.variable('pr', 'kg m-2 s-1', axis_ids)
 
     # write out the data
     try:
-        for index, val in enumerate(data.getTime()[:]):
-            cmor.write(varid, data[index, :], time_vals=val,
+        for index, val in enumerate(precc.getTime()[:]):
+            data = precc[index, :] + precl[index, :] * 1000
+            cmor.write(varid, data, time_vals=val,
                        time_bnds=[time_bnds[index, :]])
     except:
         raise
