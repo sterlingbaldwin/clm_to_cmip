@@ -1,14 +1,16 @@
 import os, sys
 import argparse
 import cdms2
+import logging
+
 from random import uniform
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE
 from time import sleep
 
-import logging
-import traceback
+from lib.util import format_debug
+
 
 def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False, data_type='clm2.h0'):
     """
@@ -20,14 +22,6 @@ def split(var_list, caseid, inpath, outpath, start, end, nproc, proc_vars=False,
     outpath = os.path.abspath(outpath)
     os.chdir(os.path.abspath(inpath))
 
-    from imp import reload
-    reload(logging)
-    logging.basicConfig(
-        format='%(asctime)s:%(levelname)s: %(message)s',
-        datefmt='%m/%d/%Y %I:%M:%S %p',
-        filename=os.path.join(prev_dir, 'splitter.log'),
-        filemode='w',
-        level=logging.DEBUG)
     msg = 'starting splitter'
     logging.info(msg)
     msg = '''
@@ -140,32 +134,11 @@ def split_one(var, infiles, outfile):
     logging.info(msg)
     return out, err
 
-def format_debug(e):
-    """
-    Return a string of an exceptions relavent information
-    """
-    _, _, tb = sys.exc_info()
-    return """
-1: {doc}
-2: {exec_info}
-3: {exec_0}
-4: {exec_1}
-5: {lineno}
-6: {stack}
-""".format(
-    doc=e.__doc__,
-    exec_info=sys.exc_info(),
-    exec_0=sys.exc_info()[0],
-    exec_1=sys.exc_info()[1],
-    lineno=traceback.tb_lineno(sys.exc_info()[2]),
-    stack=traceback.print_tb(tb))
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Single variable time series extraction for ESM data',
         prog='singlevar_ts',
-        usage='%(prog)s [-h]'
-    )
+        usage='%(prog)s [-h]')
     parser.add_argument(
         '-v', '--var-list',
         nargs='+',
@@ -230,20 +203,20 @@ if __name__ == "__main__":
         var_list = args.var_list
     else:
         if args.data_type == 'clm2.h0':
-            var_list = ['FLDS', 'QSOIL', 'WA', 'FROST_TABLE', 'SNOW_DEPTH',
-                        'FSDSNI', 'FH2OSFC', 'FSNO', 'FGR', 'QBOT', 'SNOW_SOURCES',
-                        'TSOI', 'TBOT', 'EFLX_LH_TOT', 'TLAI', 'FSDS', 'FSDSVI',
-                        'Q2M', 'TSA', 'QCHARGE', 'ZWT', 'FCEV', 'SNOWDP', 'FIRE',
-                        'QVEGT', 'SOILLIQ', 'SOILICE', 'QDRAI', 'FCOV', 'ESAI',
-                        'FPSN', 'SNOWICE', 'WIND', 'FSA', 'QVEGE', 'FSH', 'H2OSFC',
-                        'FSM', 'FSR', 'TLAKE', 'BTRAN', 'SNOWLIQ', 'QSNOMELT', 'FSDSVD',
-                        'FSDSND', 'FCTR', 'QRUNOFF', 'TSAI', 'FGEV', 'ELAI', 'ZWT_PERCH',
-                        'TWS', 'H2OSOI', 'PBOT', 'TV', 'QOVER', 'SNOW_SINKS', 'QRGWL',
-                        'TG', 'FIRA', 'RAIN', 'FSAT', 'VOLR', 'H2OSNO', 'RH2M','SNOW',
-                        'FGR12']
+            var_list = ['SOILWATER_10CM', 'SOILICE', 'SOILLIQ', 'QOVER', 'QRUNOFF', 'QVEGE',
+                        'QSOIL', 'QVEGT', 'TSOI']
         elif args.data_type == 'cam.h0':
-            var_list = ['FSNTOA', 'FLUT', 'FSNT', 'FLNT', 'FSNS', 'FLNS', 'SHFLX', 'QFLX', 
-                        'PRECC', 'PRECL', 'PRECSC', 'PRECSL', 'TS', 'TREFHT']
+            var_list = ['TREFHT', 'TS', 'TREFHTMN', 'TREFHTMX', 'PSL', 'PS', 'UBOT', 'VBOT',
+                        'U10', 'RHREFHT', 'QREFHT', 'PRECSC', 'PRECL', 'PRECC', 'QFLX', 'TAUX', 'TAUY',
+                        'LHFLX']
+    from imp import reload
+    reload(logging)
+    logging.basicConfig(
+        format='%(asctime)s:%(levelname)s: %(message)s',
+        datefmt='%m/%d/%Y %I:%M:%S %p',
+        filename=os.path.join(args.output_path, 'splitter.log'),
+        filemode='w',
+        level=logging.DEBUG)
 
     split(var_list=var_list,
           inpath=args.input_path,
