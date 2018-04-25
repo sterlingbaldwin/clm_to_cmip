@@ -4,20 +4,24 @@ import cmor
 import cdms2
 
 
+#
+#  PARTIAL
+#
+
+
 def handle(infile="", tables_dir=""):
     """
-    Transform E3SM.EFLX_LH_TOT into CMIP.hfls
-    float EFLX_LH_TOT(time, lat, lon) ;
-		EFLX_LH_TOT:long_name = "total latent heat flux [+ to atm]" ;
-		EFLX_LH_TOT:units = "W/m^2" ;
-		EFLX_LH_TOT:cell_methods = "time: mean" ;
-		EFLX_LH_TOT:_FillValue = 1.e+36f ;
-		EFLX_LH_TOT:missing_value = 1.e+36f ;
-		EFLX_LH_TOT:cell_measures = "area: area" ;
+    Transform E3SM.FLDS into CMIP.hfls
+    float FLDS(time, lat, lon) ;
+		FLDS:long_name = "atmospheric longwave radiation" ;
+		FLDS:units = "W/m^2" ;
+		FLDS:cell_methods = "time: mean" ;
+		FLDS:_FillValue = 1.e+36f ;
+		FLDS:missing_value = 1.e+36f ;
+		FLDS:cell_measures = "area: area" ;
     """
     if not infile:
         return "hello from {}".format(__name__)
-
     # extract data from the input file
     f = cdms2.open(infile)
     data = f('EFLX_LH_TOT')

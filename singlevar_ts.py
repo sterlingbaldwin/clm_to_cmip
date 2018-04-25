@@ -161,50 +161,70 @@ def format_debug(e):
     stack=traceback.print_tb(tb))
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Single variable time series extraction for ESM data',
+        prog='singlevar_ts',
+        usage='%(prog)s [-h]'
+    )
     parser.add_argument(
         '-v', '--var-list',
         nargs='+',
+        metavar='',
         help='space sepperated list of variables, use \'all\' to extract all variables')
     parser.add_argument(
         '-c', '--case-id',
+        metavar='<case_id>',
         help='name of case, e.g. 20180129.DECKv1b_piControl.ne30_oEC.edison',
         required=True)
     parser.add_argument(
         '-i', '--input-path',
+        metavar='',
         help='path to input directory',
         required=True)
     parser.add_argument(
         '-o', '--output-path',
+        metavar='',
         help='path to output directory',
         required=True)
     parser.add_argument(
         '-s', '--start-year',
+        metavar='',
         help='first year to extract',
         type=int,
         required=True)
     parser.add_argument(
         '-e', '--end-year',
+        metavar='',
         help='last year to split',
         type=int,
         required=True)
     parser.add_argument(
         '-n', '--num-proc',
+        metavar='',
         help='number of parallel processes, default = 6',
         type=int, default=6)
     parser.add_argument(
+        '-d', '--data-type',
+        metavar='',
+        default='cam.h0',
+        help='The type of data to extract from, e.g. clm2.h0 or cam.h0. Defaults to cam.h0')
+    parser.add_argument(
         '-N', '--proc-vars',
+        # metavar=' ',
         action='store_true',
         help='set the number of process to the number of variables')
     parser.add_argument(
-        '-d', '--data-type',
-        default='cam.h0',
-        help='The type of data to extract from, e.g. clm2.h0 or cam.h0. Defaults to cam.h0')
+        '--version',
+        help='print the version number and exit',
+        action='version',
+        version='%(prog)s 0.1')
     try:
-        args = parser.parse_args(sys.argv[1:])
+        args = sys.argv[1:]
     except:
         parser.print_help()
         sys.exit(1)
+    else:
+        args = parser.parse_args(args)
     
     if args.var_list:
         var_list = args.var_list

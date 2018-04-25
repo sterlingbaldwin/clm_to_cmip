@@ -66,9 +66,8 @@ class Cmorizer(object):
         
         for res in self._pool_res:
             print res.get()
-    
-    def worker_wrapper(self, func, args):
-        return func(**args)
+        self._pool.close()
+        self._pool.join()
     
     def terminate(self):
         if self._pool:
@@ -76,36 +75,54 @@ class Cmorizer(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description='Convert ESM model output into CMIP compatible format',
+        prog='e3sm_to_cmip',
+        usage='%(prog)s [-h]'
+    )
     parser.add_argument(
         '-v', '--var-list',
-        nargs='+', required=True,
+        nargs='+', 
+        required=True,
+        metavar='',
         help='space seperated list of variables to convert from clm to cmip')
     parser.add_argument(
         '-c', '--caseid',
+        metavar='<case_id>',
         required=True,
         help='name of case e.g. 20180129.DECKv1b_piControl.ne30_oEC.edison')
     parser.add_argument(
         '-i', '--input',
+        metavar='',
         required=True,
         help='path to directory containing clm data with single variables per file')
     parser.add_argument(
         '-o', '--output',
+        metavar='',
         required=True,
         help='where to store cmorized outputoutput')
     parser.add_argument(
         '-n', '--num-proc',
+        metavar='<nproc>',
         default=6, type=int,
         help='optional: number of processes, default = 6')
     parser.add_argument(
         '-H', '--handlers',
+        metavar='<handler_path>',
         default='cmor_handlers',
-        help='optional: path to cmor handlers directory, default = ./cmor_handlers')
+        help='path to cmor handlers directory, default = ./cmor_handlers')
+    parser.add_argument(
+        '--version',
+        help='print the version number and exit',
+        action='version',
+        version='%(prog)s 0.1')
     try:
-        args = parser.parse_args(sys.argv[1:])
+        args = sys.argv[1:]
     except:
         parser.print_help()
         sys.exit(1)
+    else:
+        args = parser.parse_args(args)
     
     cmorizer = Cmorizer(
         var_list=args.var_list,

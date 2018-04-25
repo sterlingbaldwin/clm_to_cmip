@@ -1,32 +1,23 @@
-import os, sys
-import traceback
-import cmor
+import os
 import cdms2
-
+import cmor
 
 def handle(infile="", tables_dir=""):
     """
-    Transform E3SM.EFLX_LH_TOT into CMIP.hfls
-    float EFLX_LH_TOT(time, lat, lon) ;
-		EFLX_LH_TOT:long_name = "total latent heat flux [+ to atm]" ;
-		EFLX_LH_TOT:units = "W/m^2" ;
-		EFLX_LH_TOT:cell_methods = "time: mean" ;
-		EFLX_LH_TOT:_FillValue = 1.e+36f ;
-		EFLX_LH_TOT:missing_value = 1.e+36f ;
-		EFLX_LH_TOT:cell_measures = "area: area" ;
+    Transform E3SM.TS to CMIP6.ts
     """
     if not infile:
         return "hello from {}".format(__name__)
-
-    # extract data from the input file
+    
+    # extract data
     f = cdms2.open(infile)
-    data = f('EFLX_LH_TOT')
+    data = f('TS')
     lat = data.getLatitude()[:]
     lon = data.getLongitude()[:]
     lat_bnds = f('lat_bnds')
     lon_bnds = f('lon_bnds')
     time = data.getTime()
-    time_bnds = f('time_bounds')
+    climatology_bnds = f('climatology_bounds')
     f.close()
 
     # setup cmor
@@ -37,7 +28,7 @@ def handle(infile="", tables_dir=""):
     table = 'CMIP6_Amon.json'
     cmor.load_table(table)
 
-    # create axes
+    # set the axes
     axes = [{
         'table_entry': 'time',
         'units': time.units
@@ -57,14 +48,12 @@ def handle(infile="", tables_dir=""):
         axis_id = cmor.axis(**axis)
         axis_ids.append(axis_id)
 
-    # create the cmor variable
-    varid = cmor.variable('hfls', 'W/m^2', axis_ids, positive='up')
+    # setup the cmor variable
+    varid = cmor.variable('ts', 'K', axis_ids)
 
-    # write out the data
-    try:
-        for index, val in enumerate(data.getTime()[:]):
-            cmor.write(varid, data[index, :], time_vals=val, time_bnds=[time_bnds[index, :]])
-    except:
-        raise
-    finally:
-        cmor.close(varid)
+    # write the data out
+    for index, val in enumerate(data.getTime()[:]):
+        cmor.write(varid, data[index, :], time_vals=val, time_bnds=[
+                climatology_bnds[index, :]])
+
+    cmor.close(varid)

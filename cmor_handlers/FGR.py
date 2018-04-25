@@ -6,14 +6,14 @@ import cdms2
 
 def handle(infile="", tables_dir=""):
     """
-    Transform E3SM.EFLX_LH_TOT into CMIP.hfls
-    float EFLX_LH_TOT(time, lat, lon) ;
-		EFLX_LH_TOT:long_name = "total latent heat flux [+ to atm]" ;
-		EFLX_LH_TOT:units = "W/m^2" ;
-		EFLX_LH_TOT:cell_methods = "time: mean" ;
-		EFLX_LH_TOT:_FillValue = 1.e+36f ;
-		EFLX_LH_TOT:missing_value = 1.e+36f ;
-		EFLX_LH_TOT:cell_measures = "area: area" ;
+    Transform E3SM.FCEV into CMIP.hfls
+    FGR(time, lat, lon) ;
+		FGR:long_name = "heat flux into soil/snow including snow melt and lake / snow light transmission" ;
+		FGR:units = "W/m^2" ;
+		FGR:cell_methods = "time: mean" ;
+		FGR:_FillValue = 1.e+36f ;
+		FGR:missing_value = 1.e+36f ;
+		FGR:cell_measures = "area: area" ;
     """
     if not infile:
         return "hello from {}".format(__name__)
