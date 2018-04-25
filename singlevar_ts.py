@@ -198,7 +198,6 @@ if __name__ == "__main__":
         help='set the number of process to the number of variables')
     parser.add_argument(
         '-d', '--data-type',
-        required=True,
         default='cam.h0',
         help='The type of data to extract from, e.g. clm2.h0 or cam.h0. Defaults to cam.h0')
     try:
