@@ -7,6 +7,7 @@ from multiprocessing import Pool
 from threading import Event
 from importlib import import_module
 
+from lib.util import format_debug
 
 class Cmorizer(object):
     """
@@ -36,7 +37,7 @@ class Cmorizer(object):
                 continue
 
             module, _ = handler.rsplit('.', 1)
-            if module not in self._var_list:
+            if module not in self._var_list and self._var_list[0] != 'all':
                 continue
             module_path = '.'.join([self._handlers_path, module])
             mod = import_module(module_path)
@@ -61,11 +62,17 @@ class Cmorizer(object):
                                 self._caseid + '.' + key + '.nc'),
                     'tables_dir': self._handlers_path
                 }
+                if not os.path.exists(kwds['infile']):
+                    print 'File not found: {}'.format(kwds['infile'])
+                    continue
                 self._pool_res.append(
                     self._pool.apply_async(val, args=(), kwds=kwds))
         
         for res in self._pool_res:
-            print res.get()
+            try:
+                res.get()
+            except Exception as e:
+                print format_debug(e)
         self._pool.close()
         self._pool.join()
     
@@ -85,7 +92,7 @@ if __name__ == "__main__":
         nargs='+', 
         required=True,
         metavar='',
-        help='space seperated list of variables to convert from clm to cmip')
+        help='space seperated list of variables to convert from e3sm to cmip. Use \'all\' to convert all variables')
     parser.add_argument(
         '-c', '--caseid',
         metavar='<case_id>',
@@ -95,7 +102,7 @@ if __name__ == "__main__":
         '-i', '--input',
         metavar='',
         required=True,
-        help='path to directory containing clm data with single variables per file')
+        help='path to directory containing e3sm data with single variables per file')
     parser.add_argument(
         '-o', '--output',
         metavar='',
