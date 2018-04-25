@@ -199,7 +199,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '-d', '--data-type',
         required=True,
-        help='The type of data to extract from, e.g. clm2.h0 or cam.h0')
+        default='cam.h0',
+        help='The type of data to extract from, e.g. clm2.h0 or cam.h0. Defaults to cam.h0')
     try:
         args = parser.parse_args(sys.argv[1:])
     except:
@@ -209,17 +210,21 @@ if __name__ == "__main__":
     if args.var_list:
         var_list = args.var_list
     else:
-        var_list = ['FLDS', 'QSOIL', 'WA', 'FROST_TABLE', 'SNOW_DEPTH',
-                    'FSDSNI', 'FH2OSFC', 'FSNO', 'FGR', 'QBOT', 'SNOW_SOURCES',
-                    'TSOI', 'TBOT', 'EFLX_LH_TOT', 'TLAI', 'FSDS', 'FSDSVI',
-                    'Q2M', 'TSA', 'QCHARGE', 'ZWT', 'FCEV', 'SNOWDP', 'FIRE',
-                    'QVEGT', 'SOILLIQ', 'SOILICE', 'QDRAI', 'FCOV', 'ESAI',
-                    'FPSN', 'SNOWICE', 'WIND', 'FSA', 'QVEGE', 'FSH', 'H2OSFC',
-                    'FSM', 'FSR', 'TLAKE', 'BTRAN', 'SNOWLIQ', 'QSNOMELT', 'FSDSVD',
-                    'FSDSND', 'FCTR', 'QRUNOFF', 'TSAI', 'FGEV', 'ELAI', 'ZWT_PERCH',
-                    'TWS', 'H2OSOI', 'PBOT', 'TV', 'QOVER', 'SNOW_SINKS', 'QRGWL',
-                    'TG', 'FIRA', 'RAIN', 'FSAT', 'VOLR', 'H2OSNO', 'RH2M','SNOW',
-                    'FGR12']
+        if args.data_type == 'clm2.h0':
+            var_list = ['FLDS', 'QSOIL', 'WA', 'FROST_TABLE', 'SNOW_DEPTH',
+                        'FSDSNI', 'FH2OSFC', 'FSNO', 'FGR', 'QBOT', 'SNOW_SOURCES',
+                        'TSOI', 'TBOT', 'EFLX_LH_TOT', 'TLAI', 'FSDS', 'FSDSVI',
+                        'Q2M', 'TSA', 'QCHARGE', 'ZWT', 'FCEV', 'SNOWDP', 'FIRE',
+                        'QVEGT', 'SOILLIQ', 'SOILICE', 'QDRAI', 'FCOV', 'ESAI',
+                        'FPSN', 'SNOWICE', 'WIND', 'FSA', 'QVEGE', 'FSH', 'H2OSFC',
+                        'FSM', 'FSR', 'TLAKE', 'BTRAN', 'SNOWLIQ', 'QSNOMELT', 'FSDSVD',
+                        'FSDSND', 'FCTR', 'QRUNOFF', 'TSAI', 'FGEV', 'ELAI', 'ZWT_PERCH',
+                        'TWS', 'H2OSOI', 'PBOT', 'TV', 'QOVER', 'SNOW_SINKS', 'QRGWL',
+                        'TG', 'FIRA', 'RAIN', 'FSAT', 'VOLR', 'H2OSNO', 'RH2M','SNOW',
+                        'FGR12']
+        elif args.data_type == 'cam.h0':
+            var_list = ['FSNTOA', 'FLUT', 'FSNT', 'FLNT', 'FSNS', 'FLNS', 'SHFLX', 'QFLX', 
+                        'PRECC', 'PRECL', 'PRECSC', 'PRECSL', 'TS', 'TREFHT']
 
     split(var_list=var_list,
           inpath=args.input_path,
